@@ -15,6 +15,8 @@ dependencies:
   http: ^1.3.0
   iconsax: ^0.0.8
   chat_bubbles: ^1.7.0
+  flutter_native_splash: ^2.4.4
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +36,31 @@ flutter:
     - family: sv-pro
       fonts:
         - asset: assets/fonts/SFPRODISPLAYREGULAR.otf
+
+flutter_launcher_icons:
+  image_path_android: "assets/images/dark.png"
+  image_path_ios: "assets/images/dark.png"
+  android: true # can specify file name here e.g. "ic_launcher"
+  ios: true # can specify file name here e.g. "My-Launcher-Icon"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#0E0D0C"
+  image: "assets/images/icon.png"
+  color_dark: "#0E0D0C"
+  image_dark: "assets/images/icon.png"
+
+  android_12:
+    image: "assets/images/icon.png"
+    color: "#0E0D0C"
+    icon_background_color: "#0E0D0C"
+    image_dark: "assets/images/icon.png"
+    icon_background_color_dark: "#0E0D0C"
+    color_dark: "#0E0D0C"
+
+  android: true
+  ios: true
+  web: false
+
+  fullscreen: false
