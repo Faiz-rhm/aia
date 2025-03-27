@@ -38,6 +38,7 @@ flutter:
         - asset: assets/fonts/SFPRODISPLAYREGULAR.otf
 
 flutter_launcher_icons:
+  #  image_path: "assets/images/icon-128x128.png"
   image_path_android: "assets/images/dark.png"
   image_path_ios: "assets/images/dark.png"
   android: true # can specify file name here e.g. "ic_launcher"
@@ -52,10 +53,10 @@ flutter_native_splash:
   image_dark: "assets/images/icon.png"
 
   android_12:
-    image: "assets/images/icon.png"
+    image: "assets/images/android_12_splash.jpg"
     color: "#0E0D0C"
     icon_background_color: "#0E0D0C"
-    image_dark: "assets/images/icon.png"
+    image_dark: "assets/images/android_12_splash.jpg"
     icon_background_color_dark: "#0E0D0C"
     color_dark: "#0E0D0C"
 

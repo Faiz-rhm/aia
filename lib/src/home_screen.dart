@@ -93,6 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _messages.add({'role': 'user', 'content': userMessage});
     });
 
+    scrollToBottom();
+
     try {
       final response = await http.post(
         Uri.parse('https://api.openai.com/v1/chat/completions'),
