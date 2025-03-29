@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,17 +17,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final stt.SpeechToText _speech = stt.SpeechToText();
-  final FocusNode _textFieldFocusNode = FocusNode();
   final FlutterTts _flutterTts = FlutterTts();
-  final List<Map<String, String>> _messages = [];
+  final FocusNode _textFieldFocusNode = FocusNode();
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  final List<Map<String, String>> _messages = [];
+
   bool _isListening = false;
-  String _text = '';
   bool _isTextFieldFocused = false;
   bool _isTextNotEmpty = false;
+  String _text = '';
   int _textFieldLines = 1;
-  final _lineLimit = 1;
+  final int _lineLimit = 1;
 
   @override
   void initState() {
@@ -39,9 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isTextFieldFocused = _textFieldFocusNode.hasFocus;
       });
 
-      if (_textFieldFocusNode.hasFocus) {
-        scrollToBottom();
-      }
+      if (_textFieldFocusNode.hasFocus) scrollToBottom();
     });
 
     _textController.addListener(() {
@@ -70,9 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
     bool available = await _speech.initialize();
     if (available) {
       setState(() => _isListening = true);
-      _speech.listen(onResult: (result) {
-        setState(() => _text = result.recognizedWords);
-      });
+      _speech.listen(
+        onResult: (result) {
+          setState(() => _text = result.recognizedWords);
+        },
+      );
     }
   }
 
@@ -81,9 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isListening = false);
 
     if (_text.isNotEmpty) {
-      _textController.text = _text;
-      _sendMessage(_text);
+      final message = _text;
+      _textController.text = message;
       _text = '';
+      _sendMessage(message);
     }
     _textController.clear();
   }
@@ -100,48 +102,43 @@ class _HomeScreenState extends State<HomeScreen> {
         Uri.parse('https://api.openai.com/v1/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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',
+          'Authorization': 'Bearer OPENAI_API_KEY', // Replace securely
         },
         body: jsonEncode({
           'model': 'gpt-3.5-turbo',
           'messages': [
             {'role': 'system', 'content': 'You are a helpful assistant.'},
             ..._messages,
-          ]
+          ],
         }),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final aiReply = data['choices'][0]['message']['content'];
+
         setState(() {
           _messages.add({'role': 'assistant', 'content': aiReply});
         });
-        _speak(aiReply);
+
+        await _speak(aiReply);
       } else {
-        print('OpenAI API error: ${response.statusCode}');
-        print('Response body: ${response.body}');
         setState(() {
           _messages.add({
             'role': 'assistant',
-            'content': 'Error: ${response.statusCode} - ${json.decode(response.body)['error']['message'] ?? 'Unknown error'}'
+            'content':
+                'Error: ${response.statusCode} - ${json.decode(response.body)['error']['message'] ?? 'Unknown error'}',
           });
         });
       }
     } catch (e) {
-      print('Exception: $e');
       setState(() {
-        _messages.add({'role': 'assistant', 'content': 'Sorry, something went wrong.'});
+        _messages.add({
+          'role': 'assistant',
+          'content': 'Sorry, something went wrong.',
+        });
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    });
   }
 
   Future<void> _speak(String text) async {
@@ -164,11 +161,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ask Anything', style: TextStyle(
-          fontFamily: 'sv-pro',
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),),
+        title: const Text(
+          'Ask Anything',
+          style: TextStyle(
+            fontFamily: 'sv-pro',
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         backgroundColor: AppColors.backgroundColor,
         scrolledUnderElevation: 0,
       ),
@@ -177,27 +177,31 @@ class _HomeScreenState extends State<HomeScreen> {
           MessageListBuilder(
             textFieldFocusNode: _textFieldFocusNode,
             scrollController: _scrollController,
-            messages: _messages
+            messages: _messages,
           ),
-
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.textfieldBackgroundColor,
-                      borderRadius: BorderRadius.circular(_textFieldLines > _lineLimit ? 48 : 24,),
-                      border: Border.all(color: AppColors.textfieldBackgroundColor)
+                      borderRadius: BorderRadius.circular(
+                        _textFieldLines > _lineLimit ? 48 : 24,
+                      ),
+                      border: Border.all(
+                        color: AppColors.textfieldBackgroundColor,
+                      ),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: _isTextFieldFocused ? CrossAxisAlignment.end : CrossAxisAlignment.center,
+                          crossAxisAlignment: _isTextFieldFocused
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.center,
                           children: [
-                            SizedBox(width: 15),
+                            const SizedBox(width: 15),
                             Expanded(
                               child: TextField(
                                 controller: _textController,
@@ -205,22 +209,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                 maxLines: null,
                                 minLines: 1,
                                 cursorColor: AppColors.primaryColor,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontFamily: 'sv-pro',
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w400
+                                  fontWeight: FontWeight.w400,
                                 ),
                                 decoration: InputDecoration(
                                   hintText: 'Ask a Follow-Up',
                                   hintStyle: TextStyle(
                                     fontFamily: 'sv-pro',
-                                    color: AppColors.labelSecondary.withOpacity(0.6),
-                                    fontWeight: FontWeight.w400
+                                    color: AppColors.labelSecondary
+                                        .withOpacity(0.6),
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                  border: InputBorder.none
+                                  border: InputBorder.none,
                                 ),
                                 onChanged: (text) {
-                                  final lines = '\n'.allMatches(text).length + 1;
+                                  final lines =
+                                      '\n'.allMatches(text).length + 1;
                                   if (lines != _textFieldLines) {
                                     setState(() {
                                       _textFieldLines = lines;
@@ -229,43 +235,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                             ),
-
                             _isTextFieldFocused
-                            ? Card(
-                                elevation: 0,
-                                margin: EdgeInsets.only(bottom: _textFieldLines > _lineLimit ? 0 : 8,),
-                                clipBehavior: Clip.hardEdge,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                color: _isTextNotEmpty ? AppColors.primaryColor : AppColors.disableColor.withOpacity(0.18),
-                                child: SizedBox(
-                                  height: 32,
-                                  width: 32,
-                                  child: InkWell(
-                                    onTap: _isTextNotEmpty
-                                    ? () {
-                                        final message = _textController.text.trim();
-                                        if (message.isNotEmpty) {
-                                          _sendMessage(message);
-                                          _textController.clear();
-                                        }
-                                      }
-                                    : null,
-                                    child: const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
-                                  ),
-                                ),
-                              )
-                            : IconButton(
-                              onPressed: _isListening ? _stopListening : _startListening,
-                              icon: Icon(
-                                _isListening ? Iconsax.microphone_slash_1 : Iconsax.microphone_2,
-                                color: AppColors.gray2,
-                                size: 30,
-                              ),
-                            ),
-
-                            SizedBox(width: 6,)
+                                ? _buildSendButton()
+                                : _buildMicButton(),
+                            const SizedBox(width: 6),
                           ],
                         ),
                       ],
@@ -276,6 +249,49 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.only(
+        bottom: _textFieldLines > _lineLimit ? 0 : 8,
+      ),
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(100),
+      ),
+      color: _isTextNotEmpty
+          ? AppColors.primaryColor
+          : AppColors.disableColor.withOpacity(0.18),
+      child: SizedBox(
+        height: 32,
+        width: 32,
+        child: InkWell(
+          onTap: _isTextNotEmpty
+              ? () {
+                  final message = _textController.text.trim();
+                  if (message.isNotEmpty) {
+                    _sendMessage(message);
+                    _textController.clear();
+                  }
+                }
+              : null,
+          child: const Icon(Icons.arrow_upward, color: Colors.white, size: 18),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMicButton() {
+    return IconButton(
+      onPressed: _isListening ? _stopListening : _startListening,
+      icon: Icon(
+        _isListening ? Iconsax.microphone_slash_1 : Iconsax.microphone_2,
+        color: AppColors.gray2,
+        size: 30,
       ),
     );
   }
